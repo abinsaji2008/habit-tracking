@@ -1,0 +1,2 @@
+# Daily Tracker
+`index.html` is the responsive main page with daily progress, calendar, tasks, habits and notes. `report.html` is a separate monthly report page and fetches the latest Realtime Database data when opened. Enable Google Authentication and add your public domain under Firebase Authentication > Settings > Authorized domains. Use `firebase-rules.json` for Realtime Database rules.
