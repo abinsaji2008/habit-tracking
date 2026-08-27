@@ -1,167 +1,2436 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Daily Tracker</title>
+
 <style>
-:root{--bg:#f6f7fb;--card:#fff;--text:#171a21;--muted:#707784;--line:#e8eaf0;--accent:#5b5bd6;--green:#16a34a;--red:#ef4444}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:14px Inter,system-ui,-apple-system,Segoe UI,Arial,sans-serif}
-button,input,textarea,select{font:inherit}button{border:0;cursor:pointer}.app{max-width:1250px;margin:auto;padding:18px}
-.top{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:18px}.brand{display:flex;align-items:center;gap:12px}.logo{width:42px;height:42px;border-radius:13px;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:800;font-size:19px}.brand h1{font-size:21px;margin:0}.brand p{margin:3px 0 0;color:var(--muted);font-size:12px}.status{padding:8px 12px;border-radius:99px;background:#fff;border:1px solid var(--line);font-size:12px}.status.ok{color:var(--green);background:#effdf3}.status.bad{color:#b91c1c;background:#fff1f2}
-.user{display:flex;align-items:center;gap:8px}.avatar{width:30px;height:30px;border-radius:50%;object-fit:cover}.signin{background:var(--accent);color:#fff;padding:10px 14px;border-radius:10px}
-.layout{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:16px}.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 3px 15px #1d243308}.hero{padding:22px}.heroRow{display:flex;justify-content:space-between;align-items:center;gap:15px}.dateTitle{font-size:25px;font-weight:750;margin:0}.muted{color:var(--muted)}.progress{height:9px;background:#eceef3;border-radius:99px;overflow:hidden;margin-top:13px}.bar{height:100%;width:0;background:var(--accent);transition:.25s}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:15px}.stat{background:#fafaff;border:1px solid var(--line);border-radius:13px;padding:12px}.stat b{display:block;font-size:22px;margin-top:3px}
-h2{font-size:16px;margin:0 0 13px}.section{margin-top:16px}.inputrow{display:flex;gap:8px}.inputrow input{flex:1}input,textarea,select{border:1px solid #dfe2e8;background:#fff;border-radius:10px;padding:10px;outline:none}input:focus,textarea:focus{border-color:var(--accent)}textarea{min-height:100px;resize:vertical}.primary{background:var(--accent);color:#fff;padding:10px 14px;border-radius:10px}.ghost{background:#f1f2f6;color:var(--text);padding:9px 12px;border-radius:10px}.danger{background:#fff0f0;color:#c62828;padding:7px 9px;border-radius:8px}
-.task{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}.task:last-child{border:0}.task input{width:18px;height:18px}.taskTitle{flex:1}.done .taskTitle{text-decoration:line-through;color:#9aa1ad}.tag{font-size:11px;padding:4px 7px;border-radius:99px;background:#f1f2f6;color:#606775}
-.habitRow{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line)}.habitRow:last-child{border:0}.check{background:#f0f2f6;color:#333;padding:8px 11px;border-radius:9px}.check.on{background:#dcfce7;color:#166534}
-.sideSticky{position:sticky;top:15px}.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}.day{min-height:38px;border-radius:9px;background:#f5f6f8;padding:6px;text-align:center;font-size:11px}.day.today{outline:2px solid var(--accent)}.day.has{background:#e8e8ff}.dayNum{font-weight:700}.dayCount{font-size:9px;color:var(--muted)}
-.monthHeader{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.monthGrid{overflow:auto}.table{border-collapse:collapse;min-width:760px;width:100%}.table th,.table td{border:1px solid var(--line);padding:7px;text-align:center;font-size:11px}.table th:first-child,.table td:first-child{position:sticky;left:0;background:#fff;text-align:left;z-index:1}.cell{width:26px;height:26px;border-radius:6px;background:#f2f3f6}.cell.on{background:#16a34a;color:#fff}
-.login{position:fixed;inset:0;background:var(--bg);display:grid;place-items:center;padding:20px;z-index:30}.login.hidden{display:none}.loginCard{width:min(420px,100%);background:#fff;border:1px solid var(--line);border-radius:22px;padding:28px;box-shadow:0 10px 35px #0001;text-align:center}.loginCard .logo{margin:0 auto 14px}.loginCard h2{font-size:24px;margin-bottom:7px}.loginCard p{color:var(--muted);line-height:1.5}.google{width:100%;background:#fff;border:1px solid #d9dce3;color:#202124;padding:12px;border-radius:10px;font-weight:600}.error{color:#b91c1c;background:#fff1f2;padding:10px;border-radius:10px;margin-top:12px;display:none}
-@media(max-width:850px){.layout{grid-template-columns:1fr}.sideSticky{position:static}.app{padding:12px}}
-@media(max-width:560px){.top{align-items:flex-start}.brand h1{font-size:19px}.status{font-size:10px;padding:7px 9px}.hero{padding:15px}.dateTitle{font-size:21px}.heroRow{align-items:flex-start}.stats{gap:7px}.stat{padding:9px}.stat b{font-size:19px}.card{border-radius:15px;padding:14px}.inputrow{flex-wrap:wrap}.inputrow input,.inputrow select{min-width:100%}.inputrow button{flex:1}.habitRow{grid-template-columns:1fr auto}.habitRow .danger{grid-column:2}.calendar{gap:3px}.day{min-height:35px;padding:4px 2px}}
+:root{
+  --bg:#f5f7fb;
+  --card:#ffffff;
+  --text:#171a21;
+  --muted:#737b88;
+  --line:#e6e9ef;
+  --primary:#5b5bd6;
+  --primary-soft:#eeeeff;
+  --green:#16a34a;
+  --red:#dc2626;
+}
+
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+}
+
+button,
+input,
+select,
+textarea{
+  font:inherit;
+}
+
+button{
+  cursor:pointer;
+  border:0;
+}
+
+.app{
+  max-width:1250px;
+  margin:auto;
+  padding:18px;
+}
+
+/* HEADER */
+
+.top{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:15px;
+  margin-bottom:18px;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.logo{
+  width:44px;
+  height:44px;
+  border-radius:14px;
+  background:var(--primary);
+  color:white;
+  display:grid;
+  place-items:center;
+  font-size:20px;
+  font-weight:800;
+}
+
+.brand h1{
+  margin:0;
+  font-size:21px;
+}
+
+.brand p{
+  margin:3px 0 0;
+  color:var(--muted);
+  font-size:12px;
+}
+
+.user{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.avatar{
+  width:32px;
+  height:32px;
+  border-radius:50%;
+  object-fit:cover;
+}
+
+.status{
+  padding:8px 12px;
+  border-radius:50px;
+  border:1px solid var(--line);
+  background:white;
+  font-size:12px;
+}
+
+.status.ok{
+  color:var(--green);
+  background:#effdf3;
+}
+
+.status.error{
+  color:#b91c1c;
+  background:#fff1f2;
+}
+
+/* LAYOUT */
+
+.layout{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 330px;
+  gap:16px;
+}
+
+.card{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:18px;
+  padding:18px;
+  box-shadow:0 3px 15px rgba(0,0,0,.03);
+}
+
+.section{
+  margin-top:16px;
+}
+
+/* HERO */
+
+.hero{
+  padding:22px;
+}
+
+.heroRow{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:15px;
+}
+
+.dateTitle{
+  font-size:25px;
+  font-weight:750;
+}
+
+.progress{
+  height:9px;
+  background:#eceef3;
+  border-radius:99px;
+  overflow:hidden;
+  margin-top:14px;
+}
+
+.progressBar{
+  height:100%;
+  width:0;
+  background:var(--primary);
+  transition:.25s;
+}
+
+.stats{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  margin-top:15px;
+}
+
+.stat{
+  background:#fafaff;
+  border:1px solid var(--line);
+  border-radius:13px;
+  padding:12px;
+}
+
+.stat span{
+  color:var(--muted);
+}
+
+.stat b{
+  display:block;
+  font-size:22px;
+  margin-top:4px;
+}
+
+/* FORM */
+
+h2{
+  font-size:16px;
+  margin:0 0 13px;
+}
+
+.inputRow{
+  display:flex;
+  gap:8px;
+}
+
+input,
+select,
+textarea{
+  border:1px solid #dfe2e8;
+  background:white;
+  border-radius:10px;
+  padding:10px;
+  outline:none;
+}
+
+input:focus,
+select:focus,
+textarea:focus{
+  border-color:var(--primary);
+}
+
+.inputRow input:first-child{
+  flex:1;
+}
+
+.primary{
+  background:var(--primary);
+  color:white;
+  padding:10px 14px;
+  border-radius:10px;
+}
+
+.secondary{
+  background:#f0f1f5;
+  color:var(--text);
+  padding:9px 12px;
+  border-radius:10px;
+}
+
+.danger{
+  background:#fff0f0;
+  color:var(--red);
+  padding:7px 10px;
+  border-radius:8px;
+}
+
+/* TASKS */
+
+.task{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  padding:12px 0;
+  border-bottom:1px solid var(--line);
+}
+
+.task:last-child{
+  border-bottom:0;
+}
+
+.task input{
+  width:18px;
+  height:18px;
+}
+
+.taskTitle{
+  flex:1;
+}
+
+.task.done .taskTitle{
+  text-decoration:line-through;
+  color:#9aa1ad;
+}
+
+.tag{
+  font-size:11px;
+  padding:4px 7px;
+  border-radius:99px;
+  background:#f1f2f6;
+  color:#606775;
+}
+
+/* HABITS */
+
+.habit{
+  display:grid;
+  grid-template-columns:1fr auto auto;
+  gap:10px;
+  align-items:center;
+  padding:12px 0;
+  border-bottom:1px solid var(--line);
+}
+
+.habit:last-child{
+  border-bottom:0;
+}
+
+.habitGoal{
+  color:var(--muted);
+  font-size:11px;
+  margin-top:3px;
+}
+
+.check{
+  background:#f0f2f6;
+  padding:8px 11px;
+  border-radius:9px;
+}
+
+.check.done{
+  background:#dcfce7;
+  color:#166534;
+}
+
+/* CALENDAR */
+
+.sideSticky{
+  position:sticky;
+  top:15px;
+}
+
+.calendar{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:5px;
+}
+
+.calendarHeader{
+  color:var(--muted);
+  font-size:10px;
+  text-align:center;
+}
+
+.day{
+  min-height:38px;
+  border-radius:9px;
+  background:#f5f6f8;
+  padding:6px;
+  text-align:center;
+  font-size:11px;
+}
+
+.day.today{
+  outline:2px solid var(--primary);
+}
+
+.day.has{
+  background:var(--primary-soft);
+}
+
+.dayNum{
+  font-weight:700;
+}
+
+.dayCount{
+  font-size:9px;
+  color:var(--muted);
+}
+
+/* MONTH */
+
+.monthHeader{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:12px;
+}
+
+.monthTable{
+  overflow:auto;
+}
+
+table{
+  border-collapse:collapse;
+  min-width:760px;
+  width:100%;
+}
+
+th,
+td{
+  border:1px solid var(--line);
+  padding:7px;
+  text-align:center;
+  font-size:11px;
+}
+
+th:first-child,
+td:first-child{
+  position:sticky;
+  left:0;
+  background:white;
+  text-align:left;
+  z-index:1;
+}
+
+.dayCell{
+  width:27px;
+  height:27px;
+  border-radius:6px;
+  background:#f1f2f5;
+  color:#333;
+}
+
+.dayCell.done{
+  background:var(--green);
+  color:white;
+}
+
+/* LOGIN */
+
+.login{
+  position:fixed;
+  inset:0;
+  background:var(--bg);
+  display:grid;
+  place-items:center;
+  padding:20px;
+  z-index:100;
+}
+
+.login.hidden{
+  display:none;
+}
+
+.loginCard{
+  width:min(420px,100%);
+  background:white;
+  border:1px solid var(--line);
+  border-radius:22px;
+  padding:30px;
+  text-align:center;
+  box-shadow:0 10px 35px rgba(0,0,0,.08);
+}
+
+.loginCard .logo{
+  margin:auto;
+  margin-bottom:15px;
+}
+
+.loginCard h2{
+  font-size:24px;
+}
+
+.loginCard p{
+  color:var(--muted);
+  line-height:1.5;
+}
+
+.googleButton{
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  background:white;
+  border:1px solid #d7dbe3;
+  font-weight:600;
+}
+
+.loginError{
+  display:none;
+  margin-top:12px;
+  padding:10px;
+  border-radius:10px;
+  background:#fff1f2;
+  color:#b91c1c;
+  font-size:12px;
+}
+
+/* MOBILE */
+
+@media(max-width:850px){
+
+  .layout{
+    grid-template-columns:1fr;
+  }
+
+  .sideSticky{
+    position:static;
+  }
+
+}
+
+@media(max-width:560px){
+
+  .app{
+    padding:12px;
+  }
+
+  .top{
+    align-items:flex-start;
+  }
+
+  .brand h1{
+    font-size:19px;
+  }
+
+  .status{
+    font-size:10px;
+    padding:7px 9px;
+  }
+
+  .hero{
+    padding:15px;
+  }
+
+  .dateTitle{
+    font-size:21px;
+  }
+
+  .stats{
+    gap:7px;
+  }
+
+  .stat{
+    padding:9px;
+  }
+
+  .stat b{
+    font-size:19px;
+  }
+
+  .card{
+    padding:14px;
+    border-radius:15px;
+  }
+
+  .inputRow{
+    flex-wrap:wrap;
+  }
+
+  .inputRow input,
+  .inputRow select{
+    min-width:100%;
+  }
+
+  .inputRow button{
+    flex:1;
+  }
+
+  .habit{
+    grid-template-columns:1fr auto;
+  }
+
+  .habit .danger{
+    grid-column:2;
+  }
+
+  .calendar{
+    gap:3px;
+  }
+
+  .day{
+    min-height:35px;
+    padding:4px 2px;
+  }
+}
 </style>
 </head>
+
 <body>
 
-<div id="login" class="login">
+<!-- LOGIN -->
+
+<div id="loginScreen" class="login">
+
   <div class="loginCard">
+
     <div class="logo">✓</div>
+
     <h2>Daily Tracker</h2>
-    <p>Sign in to keep your personal tracker private and synced across devices.</p>
-    <button class="google" id="googleBtn">Continue with Google</button>
-    <div id="loginError" class="error"></div>
+
+    <p>
+      Sign in to keep your personal tracker
+      private and synchronized across devices.
+    </p>
+
+    <button id="googleLogin" class="googleButton">
+      Continue with Google
+    </button>
+
+    <div id="loginError" class="loginError"></div>
+
   </div>
+
 </div>
+
+
+<!-- APP -->
 
 <div id="app" class="app" style="display:none">
+
 <header class="top">
-<div class="brand"><div class="logo">✓</div><div><h1>Daily Tracker</h1><p id="subtitle">Personal productivity dashboard</p></div></div>
-<div class="user"><span id="status" class="status">Connecting…</span><img id="avatar" class="avatar" style="display:none"><button id="signout" class="ghost">Sign out</button></div>
+
+  <div class="brand">
+
+    <div class="logo">✓</div>
+
+    <div>
+      <h1>Daily Tracker</h1>
+      <p id="userName">
+        Personal productivity dashboard
+      </p>
+    </div>
+
+  </div>
+
+  <div class="user">
+
+    <span id="firebaseStatus" class="status">
+      Connecting…
+    </span>
+
+    <img
+      id="userAvatar"
+      class="avatar"
+      style="display:none"
+    >
+
+    <button
+      id="logoutButton"
+      class="secondary"
+    >
+      Sign out
+    </button>
+
+  </div>
+
 </header>
 
+
 <div class="layout">
+
 <main>
+
+<!-- TODAY -->
+
 <section class="card hero">
-<div class="heroRow"><div><div class="dateTitle" id="todayText"></div><div class="muted" id="dateSmall"></div></div><button class="ghost" onclick="refresh()">↻ Refresh</button></div>
-<div class="progress"><div class="bar" id="bar"></div></div>
-<div class="stats"><div class="stat"><span class="muted">Tasks</span><b id="taskStat">0</b></div><div class="stat"><span class="muted">Done</span><b id="doneStat">0</b></div><div class="stat"><span class="muted">Progress</span><b id="pctStat">0%</b></div></div>
+
+  <div class="heroRow">
+
+    <div>
+
+      <div
+        id="todayTitle"
+        class="dateTitle"
+      ></div>
+
+      <div
+        id="todayDate"
+        class="muted"
+      ></div>
+
+    </div>
+
+    <button
+      id="refreshButton"
+      class="secondary"
+    >
+      ↻ Refresh
+    </button>
+
+  </div>
+
+
+  <div class="progress">
+
+    <div
+      id="progressBar"
+      class="progressBar"
+    ></div>
+
+  </div>
+
+
+  <div class="stats">
+
+    <div class="stat">
+
+      <span>Tasks</span>
+
+      <b id="taskCount">
+        0
+      </b>
+
+    </div>
+
+    <div class="stat">
+
+      <span>Completed</span>
+
+      <b id="completedCount">
+        0
+      </b>
+
+    </div>
+
+    <div class="stat">
+
+      <span>Progress</span>
+
+      <b id="percentage">
+        0%
+      </b>
+
+    </div>
+
+  </div>
+
 </section>
 
+
+<!-- TODO -->
+
 <section class="card section">
+
 <h2>Today's To-Do</h2>
-<div class="inputrow"><input id="taskInput" placeholder="What needs to be done?"><select id="priority"><option>Normal</option><option>High</option><option>Low</option></select><button class="primary" onclick="addTask()">Add task</button></div>
-<div id="tasks"></div>
+
+<div class="inputRow">
+
+<input
+  id="taskInput"
+  type="text"
+  placeholder="What needs to be done?"
+>
+
+<select id="priority">
+
+<option>Normal</option>
+<option>High</option>
+<option>Low</option>
+
+</select>
+
+<button
+  id="addTaskButton"
+  class="primary"
+>
+Add task
+</button>
+
+</div>
+
+<div id="taskList"></div>
+
 </section>
 
+
+<!-- HABITS -->
+
 <section class="card section">
+
 <h2>Habits</h2>
-<div class="inputrow"><input id="habitInput" placeholder="Add a habit…"><input id="goalInput" placeholder="Goal (optional)"><button class="primary" onclick="addHabit()">Add</button></div>
-<div id="habits"></div>
+
+<div class="inputRow">
+
+<input
+  id="habitInput"
+  type="text"
+  placeholder="Add a habit..."
+>
+
+<input
+  id="goalInput"
+  type="text"
+  placeholder="Goal (optional)"
+>
+
+<button
+  id="addHabitButton"
+  class="primary"
+>
+Add
+</button>
+
+</div>
+
+<div id="habitList"></div>
+
 </section>
 
+
+<!-- MONTH -->
+
 <section class="card section">
-<h2>Monthly Habit Tracker</h2>
-<div class="monthHeader"><b id="monthName"></b><div><button class="ghost" onclick="monthMove(-1)">←</button> <button class="ghost" onclick="monthMove(1)">→</button></div></div>
-<div class="monthGrid"><table class="table"><thead id="mhead"></thead><tbody id="mbody"></tbody></table></div>
+
+<div class="monthHeader">
+
+<h2 id="monthName"></h2>
+
+<div>
+
+<button
+  id="previousMonth"
+  class="secondary"
+>
+←
+</button>
+
+<button
+  id="nextMonth"
+  class="secondary"
+>
+→
+</button>
+
+</div>
+
+</div>
+
+<div class="monthTable">
+
+<table>
+
+<thead id="monthHead"></thead>
+
+<tbody id="monthBody"></tbody>
+
+</table>
+
+</div>
+
 </section>
+
 </main>
 
+
+<!-- SIDEBAR -->
+
 <aside>
+
 <div class="card sideSticky">
+
 <h2>This Month</h2>
-<div id="calendar" class="calendar"></div>
-<div class="section"><h2>Notes</h2><textarea id="notes" style="width:100%" placeholder="Notes for today…"></textarea><button class="primary" style="margin-top:8px;width:100%" onclick="saveNotes()">Save notes</button></div>
-<div class="section"><h2>Report</h2><button class="ghost" style="width:100%" onclick="printReport()">Print / Save monthly PDF</button></div>
+
+<div
+  id="calendar"
+  class="calendar"
+></div>
+
+
+<div class="section">
+
+<h2>Daily Notes</h2>
+
+<textarea
+  id="notes"
+  style="width:100%"
+  placeholder="Write something about today..."
+></textarea>
+
+<button
+  id="saveNotesButton"
+  class="primary"
+  style="margin-top:8px;width:100%"
+>
+Save notes
+</button>
+
 </div>
+
+
+<div class="section">
+
+<h2>Monthly Report</h2>
+
+<button
+  id="pdfButton"
+  class="secondary"
+  style="width:100%"
+>
+Print / Save PDF
+</button>
+
+</div>
+
+</div>
+
 </aside>
+
 </div>
+
 </div>
+
 
 <script type="module">
-import {initializeApp} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-import {getAuth,GoogleAuthProvider,signInWithPopup,onAuthStateChanged,signOut} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
 
-const firebaseConfig={
- apiKey:"AIzaSyAipiHiXzu4mSvK6BbNjImOHYdkqxKSt3c",
- authDomain:"tracking-98a71.firebaseapp.com",
- databaseURL:"https://tracking-98a71-default-rtdb.firebaseio.com/",
- projectId:"tracking-98a71",
- storageBucket:"tracking-98a71.firebasestorage.app",
- messagingSenderId:"841004547092",
- appId:"1:841004547092:web:129ea46b2297ce01c0fb01",
- measurementId:"G-XQFRPXB3J9"
+/* ============================================
+   FIREBASE
+============================================ */
+
+import {
+  initializeApp
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithPopup,
+  signOut,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+
+import {
+  getDatabase,
+  ref,
+  get,
+  set,
+  remove
+} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-database.js";
+
+
+const firebaseConfig = {
+
+  apiKey:
+    "AIzaSyAipiHiXzu4mSvK6BbNjImOHYdkqxKSt3c",
+
+  authDomain:
+    "tracking-98a71.firebaseapp.com",
+
+  databaseURL:
+    "https://tracking-98a71-default-rtdb.firebaseio.com/",
+
+  projectId:
+    "tracking-98a71",
+
+  storageBucket:
+    "tracking-98a71.firebasestorage.app",
+
+  messagingSenderId:
+    "841004547092",
+
+  appId:
+    "1:841004547092:web:129ea46b2297ce01c0fb01",
+
+  measurementId:
+    "G-XQFRPXB3J9"
+
 };
 
-const app=initializeApp(firebaseConfig);
-const auth=getAuth(app);
-const provider=new GoogleAuthProvider();
-const DB="https://tracking-98a71-default-rtdb.firebaseio.com";
-let user=null,state={tasks:{},habits:{},dailyRecords:{}},viewMonth=new Date(new Date().getFullYear(),new Date().getMonth(),1);
-const $=id=>document.getElementById(id);
-const dateKey=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
-const today=dateKey(new Date());
 
-function esc(x){return String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
-function setStatus(t,ok=true){$("status").textContent=t;$("status").className="status "+(ok?"ok":"bad")}
-async function api(path,opt={}){
- if(!user)throw Error("Not signed in");
- const token=await user.getIdToken();
- const sep=path.includes("?")?"&":"?";
- const url=DB+path+".json"+sep+"auth="+encodeURIComponent(token);
- const r=await fetch(url,{...opt,headers:{"Content-Type":"application/json",...(opt.headers||{})}});
- const tx=await r.text();
- if(!r.ok)throw Error("HTTP "+r.status+" "+tx);
- return tx?JSON.parse(tx):null;
-}
-function userRoot(){return "/users/"+user.uid}
+const firebaseApp =
+  initializeApp(firebaseConfig);
 
-async function refresh(){
- try{
-  state=await api(userRoot())||{};
-  state.tasks||={};state.habits||={};state.dailyRecords||={};
-  $("notes").value=state.dailyRecords[today]?.notes||"";
-  renderAll();setStatus("● Firebase connected",true);
- }catch(e){setStatus("● Firebase error",false);console.error(e)}
-}
-async function write(path,value){return api(path,{method:"PUT",body:JSON.stringify(value)})}
-async function addTask(){let title=$("taskInput").value.trim();if(!title)return;let id="t_"+Date.now();try{await write(userRoot()+"/tasks/"+id,{title,date:today,priority:$("priority").value,completed:false,createdAt:Date.now()});$("taskInput").value="";await refresh()}catch(e){alert("Task not saved: "+e.message)}}
-async function toggleTask(id){let t=state.tasks[id];if(!t)return;try{await write(userRoot()+"/tasks/"+id,{...t,completed:!t.completed});await refresh()}catch(e){alert(e.message)}}
-async function deleteTask(id){if(!confirm("Delete this task?"))return;try{await api(userRoot()+"/tasks/"+id,{method:"DELETE"});await refresh()}catch(e){alert(e.message)}}
-function renderTasks(){let a=Object.entries(state.tasks).filter(([,t])=>t.date===today).sort((a,b)=>(a[1].createdAt||0)-(b[1].createdAt||0));$("tasks").innerHTML=a.length?a.map(([id,t])=>`<div class="task ${t.completed?"done":""}"><input type="checkbox" ${t.completed?"checked":""} onchange="toggleTask('${id}')"><div class="taskTitle">${esc(t.title)}</div><span class="tag">${esc(t.priority)}</span><button class="danger" onclick="deleteTask('${id}')">×</button></div>`).join(""):'<div class="muted" style="padding:18px 0;text-align:center">Nothing planned yet.</div>'}
-async function addHabit(){let name=$("habitInput").value.trim();if(!name)return;let id="h_"+Date.now();try{await write(userRoot()+"/habits/"+id,{name,goal:$("goalInput").value.trim(),active:true,createdAt:Date.now()});$("habitInput").value="";$("goalInput").value="";await refresh()}catch(e){alert("Habit not saved: "+e.message)}}
-async function toggleHabit(id,d){let on=!!state.dailyRecords[d]?.habitChecks?.[id];try{if(on)await api(userRoot()+"/dailyRecords/"+d+"/habitChecks/"+id,{method:"DELETE"});else await write(userRoot()+"/dailyRecords/"+d+"/habitChecks/"+id,true);await refresh()}catch(e){alert("Habit check not saved: "+e.message)}}
-async function deleteHabit(id){if(!confirm("Delete this habit?"))return;try{await api(userRoot()+"/habits/"+id,{method:"DELETE"});await refresh()}catch(e){alert(e.message)}}
-function renderHabits(){let a=Object.entries(state.habits).filter(([,h])=>h.active!==false);$("habits").innerHTML=a.length?a.map(([id,h])=>{let on=!!state.dailyRecords[today]?.habitChecks?.[id];return `<div class="habitRow"><div><b>${esc(h.name)}</b><div class="muted" style="font-size:11px">${esc(h.goal||"Daily")}</div></div><button class="check ${on?"on":""}" onclick="toggleHabit('${id}','${today}')">${on?"✓ Done":"Mark done"}</button><button class="danger" onclick="deleteHabit('${id}')">×</button></div>`}).join(""):'<div class="muted" style="padding:18px 0;text-align:center">Add habits to start tracking.</div>'}
-function dim(y,m){return new Date(y,m+1,0).getDate()}
-function renderMonth(){let y=viewMonth.getFullYear(),m=viewMonth.getMonth(),n=dim(y,m);$("monthName").textContent=viewMonth.toLocaleString(undefined,{month:"long",year:"numeric"});let h="<tr><th>Habit</th>";for(let i=1;i<=n;i++)h+=`<th>${i}</th>`;$("mhead").innerHTML=h+"</tr>";let a=Object.entries(state.habits).filter(([,x])=>x.active!==false);$("mbody").innerHTML=a.length?a.map(([id,x])=>{let r=`<tr><td><b>${esc(x.name)}</b></td>`;for(let i=1;i<=n;i++){let d=dateKey(new Date(y,m,i)),on=!!state.dailyRecords[d]?.habitChecks?.[id];r+=`<td><button class="cell ${on?"on":""}" onclick="toggleHabit('${id}','${d}')">${on?"✓":""}</button></td>`}return r+"</tr>"}).join(""):`<tr><td colspan="${n+1}" class="muted">No habits yet.</td></tr>`}
-function monthMove(v){viewMonth=new Date(viewMonth.getFullYear(),viewMonth.getMonth()+v,1);renderMonth();renderCalendar()}
-function renderCalendar(){let y=viewMonth.getFullYear(),m=viewMonth.getMonth(),n=dim(y,m),first=new Date(y,m,1).getDay(),s="";["S","M","T","W","T","F","S"].forEach(x=>s+=`<div class="muted" style="text-align:center;font-size:10px">${x}</div>`);for(let i=0;i<first;i++)s+="<div></div>";for(let i=1;i<=n;i++){let d=dateKey(new Date(y,m,i)),c=Object.keys(state.dailyRecords[d]?.habitChecks||{}).length;s+=`<div class="day ${d===today?"today":""} ${c?"has":""}"><div class="dayNum">${i}</div><div class="dayCount">${c?c+" ✓":""}</div></div>`}$("calendar").innerHTML=s}
-function renderAnalytics(){let a=Object.values(state.tasks).filter(t=>t.date===today),d=a.filter(t=>t.completed).length,p=a.length?Math.round(d/a.length*100):0;$("taskStat").textContent=a.length;$("doneStat").textContent=d;$("pctStat").textContent=p+"%";$("bar").style.width=p+"%"}
-async function saveNotes(){try{await write(userRoot()+"/dailyRecords/"+today+"/notes",$("notes").value);setStatus("● Notes saved",true);setTimeout(()=>setStatus("● Firebase connected",true),1000)}catch(e){alert("Notes not saved: "+e.message)}}
-function renderAll(){renderTasks();renderHabits();renderMonth();renderCalendar();renderAnalytics()}
-function printReport(){let y=viewMonth.getFullYear(),m=viewMonth.getMonth(),n=dim(y,m),rows=Object.entries(state.habits).filter(([,h])=>h.active!==false).map(([id,h])=>{let c=0;for(let i=1;i<=n;i++){let d=dateKey(new Date(y,m,i));if(state.dailyRecords[d]?.habitChecks?.[id])c++}return `<tr><td>${esc(h.name)}</td><td>${c}/${n}</td><td>${Math.round(c/n*100)}%</td></tr>`}).join("");let w=open("","_blank");w.document.write(`<html><head><title>Daily Tracker Report</title><style>body{font-family:Arial;padding:30px}table{border-collapse:collapse;width:100%}td,th{border:1px solid #ddd;padding:8px}</style></head><body><h1>Daily Tracker — ${viewMonth.toLocaleString(undefined,{month:"long",year:"numeric"})}</h1><table><tr><th>Habit</th><th>Completed</th><th>Rate</th></tr>${rows}</table><p>Print dialog: choose “Save as PDF”.</p></body></html>`);w.document.close();w.print()}
+const auth =
+  getAuth(firebaseApp);
 
-$("todayText").textContent=new Date().toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric"});
-$("dateSmall").textContent=today;
+const database =
+  getDatabase(firebaseApp);
 
-$("googleBtn").onclick=async()=>{
- try{$("loginError").style.display="none";await signInWithPopup(auth,provider)}
- catch(e){$("loginError").textContent=e.code+": "+e.message;$("loginError").style.display="block";console.error(e)}
+const provider =
+  new GoogleAuthProvider();
+
+
+/* ============================================
+   STATE
+============================================ */
+
+let currentUser = null;
+
+let data = {
+
+  tasks:{},
+
+  habits:{},
+
+  dailyRecords:{}
+
 };
-$("signout").onclick=()=>signOut(auth);
 
-onAuthStateChanged(auth,async u=>{
- user=u;
- if(u){
-  $("login").classList.add("hidden");$("app").style.display="block";
-  $("subtitle").textContent=u.displayName||u.email||"Personal productivity dashboard";
-  if(u.photoURL){$("avatar").src=u.photoURL;$("avatar").style.display="block"}
-  await refresh();
- }else{
-  $("login").classList.remove("hidden");$("app").style.display="none";
- }
-});
+let currentMonth =
+  new Date(
+    new Date().getFullYear(),
+    new Date().getMonth(),
+    1
+  );
+
+
+/* ============================================
+   HELPERS
+============================================ */
+
+const $ = id =>
+  document.getElementById(id);
+
+
+function dateKey(date){
+
+  return date.getFullYear()
+    + "-"
+    + String(date.getMonth()+1).padStart(2,"0")
+    + "-"
+    + String(date.getDate()).padStart(2,"0");
+
+}
+
+
+const today =
+  dateKey(new Date());
+
+
+function escapeHTML(value){
+
+  return String(value ?? "")
+    .replace(/[&<>"']/g, char => ({
+
+      "&":"&amp;",
+      "<":"&lt;",
+      ">":"&gt;",
+      '"':"&quot;",
+      "'":"&#039;"
+
+    }[char]));
+
+}
+
+
+function userRoot(){
+
+  return ref(
+    database,
+    "users/" + currentUser.uid
+  );
+
+}
+
+
+function setStatus(text,success=true){
+
+  $("firebaseStatus").textContent =
+    text;
+
+  $("firebaseStatus").className =
+    success
+      ? "status ok"
+      : "status error";
+
+}
+
+
+/* ============================================
+   FIREBASE LOAD
+============================================ */
+
+async function loadData(){
+
+  if(!currentUser)
+    return;
+
+  try{
+
+    setStatus(
+      "Connecting to Firebase…"
+    );
+
+    const snapshot =
+      await get(userRoot());
+
+    if(snapshot.exists()){
+
+      const value =
+        snapshot.val();
+
+      data.tasks =
+        value.tasks || {};
+
+      data.habits =
+        value.habits || {};
+
+      data.dailyRecords =
+        value.dailyRecords || {};
+
+    }else{
+
+      data = {
+
+        tasks:{},
+        habits:{},
+        dailyRecords:{}
+
+      };
+
+    }
+
+    $("notes").value =
+      data.dailyRecords[today]?.notes || "";
+
+    renderAll();
+
+    setStatus(
+      "● Firebase connected",
+      true
+    );
+
+  }catch(error){
+
+    console.error(error);
+
+    setStatus(
+      "● Firebase error",
+      false
+    );
+
+    alert(
+      "Firebase error:\n\n"
+      + error.message
+    );
+
+  }
+
+}
+
+
+/* ============================================
+   TASKS
+============================================ */
+
+async function addTask(){
+
+  const title =
+    $("taskInput").value.trim();
+
+  if(!title)
+    return;
+
+  const id =
+    "t_" +
+    Date.now();
+
+  const task = {
+
+    title:title,
+
+    date:today,
+
+    priority:
+      $("priority").value,
+
+    completed:false,
+
+    createdAt:
+      Date.now()
+
+  };
+
+  try{
+
+    await set(
+      ref(
+        database,
+        "users/"
+        + currentUser.uid
+        + "/tasks/"
+        + id
+      ),
+      task
+    );
+
+    $("taskInput").value="";
+
+    await loadData();
+
+  }catch(error){
+
+    alert(
+      "Task could not be saved:\n\n"
+      + error.message
+    );
+
+  }
+
+}
+
+
+async function toggleTask(id){
+
+  const task =
+    data.tasks[id];
+
+  if(!task)
+    return;
+
+  try{
+
+    await set(
+
+      ref(
+        database,
+        "users/"
+        + currentUser.uid
+        + "/tasks/"
+        + id
+      ),
+
+      {
+        ...task,
+        completed:
+          !task.completed
+      }
+
+    );
+
+    await loadData();
+
+  }catch(error){
+
+    alert(error.message);
+
+  }
+
+}
+
+
+async function deleteTask(id){
+
+  if(
+    !confirm(
+      "Delete this task?"
+    )
+  )
+    return;
+
+  try{
+
+    await remove(
+
+      ref(
+        database,
+        "users/"
+        + currentUser.uid
+        + "/tasks/"
+        + id
+      )
+
+    );
+
+    await loadData();
+
+  }catch(error){
+
+    alert(error.message);
+
+  }
+
+}
+
+
+function renderTasks(){
+
+  const tasks =
+    Object.entries(data.tasks)
+
+      .filter(
+        ([id,task]) =>
+          task.date === today
+      )
+
+      .sort(
+        (a,b) =>
+          (a[1].createdAt || 0)
+          -
+          (b[1].createdAt || 0)
+      );
+
+
+  if(!tasks.length){
+
+    $("taskList").innerHTML =
+
+      `<div
+        class="muted"
+        style="padding:18px 0;text-align:center"
+      >
+        Nothing planned yet.
+      </div>`;
+
+    return;
+
+  }
+
+
+  $("taskList").innerHTML =
+
+    tasks.map(
+      ([id,task]) => `
+
+      <div
+        class="task ${task.completed ? "done":""}"
+      >
+
+        <input
+          type="checkbox"
+          ${task.completed ? "checked":""}
+          data-task-toggle="${id}"
+        >
+
+        <div class="taskTitle">
+          ${escapeHTML(task.title)}
+        </div>
+
+        <span class="tag">
+          ${escapeHTML(task.priority)}
+        </span>
+
+        <button
+          class="danger"
+          data-task-delete="${id}"
+        >
+          ×
+        </button>
+
+      </div>
+
+      `
+    ).join("");
+
+
+  document
+    .querySelectorAll("[data-task-toggle]")
+    .forEach(button => {
+
+      button.addEventListener(
+        "change",
+        () =>
+          toggleTask(
+            button.dataset.taskToggle
+          )
+      );
+
+    });
+
+
+  document
+    .querySelectorAll("[data-task-delete]")
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        () =>
+          deleteTask(
+            button.dataset.taskDelete
+          )
+      );
+
+    });
+
+}
+
+
+/* ============================================
+   HABITS
+============================================ */
+
+async function addHabit(){
+
+  const name =
+    $("habitInput").value.trim();
+
+  if(!name)
+    return;
+
+  const id =
+    "h_" +
+    Date.now();
+
+  const habit = {
+
+    name:name,
+
+    goal:
+      $("goalInput").value.trim(),
+
+    active:true,
+
+    createdAt:
+      Date.now()
+
+  };
+
+
+  try{
+
+    await set(
+
+      ref(
+        database,
+        "users/"
+        + currentUser.uid
+        + "/habits/"
+        + id
+      ),
+
+      habit
+
+    );
+
+    $("habitInput").value="";
+    $("goalInput").value="";
+
+    await loadData();
+
+  }catch(error){
+
+    alert(
+      "Habit could not be saved:\n\n"
+      + error.message
+    );
+
+  }
+
+}
+
+
+async function toggleHabit(
+  id,
+  date
+){
+
+  const path =
+    "users/"
+    + currentUser.uid
+    + "/dailyRecords/"
+    + date
+    + "/habitChecks/"
+    + id;
+
+  const checked =
+    !!data.dailyRecords
+      [date]
+      ?.habitChecks
+      ?. [id];
+
+
+  try{
+
+    if(checked){
+
+      await remove(
+        ref(database,path)
+      );
+
+    }else{
+
+      await set(
+        ref(database,path),
+        true
+      );
+
+    }
+
+    await loadData();
+
+  }catch(error){
+
+    alert(
+      "Habit could not be saved:\n\n"
+      + error.message
+    );
+
+  }
+
+}
+
+
+async function deleteHabit(id){
+
+  if(
+    !confirm(
+      "Delete this habit?"
+    )
+  )
+    return;
+
+  try{
+
+    await remove(
+
+      ref(
+        database,
+        "users/"
+        + currentUser.uid
+        + "/habits/"
+        + id
+      )
+
+    );
+
+    await loadData();
+
+  }catch(error){
+
+    alert(error.message);
+
+  }
+
+}
+
+
+function renderHabits(){
+
+  const habits =
+    Object.entries(data.habits)
+      .filter(
+        ([id,habit]) =>
+          habit.active !== false
+      );
+
+
+  if(!habits.length){
+
+    $("habitList").innerHTML =
+
+      `<div
+        class="muted"
+        style="padding:18px 0;text-align:center"
+      >
+        Add habits to start tracking.
+      </div>`;
+
+    return;
+
+  }
+
+
+  $("habitList").innerHTML =
+
+    habits.map(
+      ([id,habit]) => {
+
+        const checked =
+          !!data
+            .dailyRecords
+            [today]
+            ?.habitChecks
+            ?. [id];
+
+
+        return `
+
+        <div class="habit">
+
+          <div>
+
+            <b>
+              ${escapeHTML(habit.name)}
+            </b>
+
+            <div class="habitGoal">
+              ${escapeHTML(
+                habit.goal || "Daily"
+              )}
+            </div>
+
+          </div>
+
+          <button
+            class="check ${checked?"done":""}"
+            data-habit="${id}"
+          >
+            ${checked
+              ? "✓ Done"
+              : "Mark done"}
+          </button>
+
+          <button
+            class="danger"
+            data-habit-delete="${id}"
+          >
+            ×
+          </button>
+
+        </div>
+
+        `;
+
+      }
+    ).join("");
+
+
+  document
+    .querySelectorAll("[data-habit]")
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        () =>
+          toggleHabit(
+            button.dataset.habit,
+            today
+          )
+      );
+
+    });
+
+
+  document
+    .querySelectorAll("[data-habit-delete]")
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        () =>
+          deleteHabit(
+            button.dataset.habitDelete
+          )
+      );
+
+    });
+
+}
+
+
+/* ============================================
+   MONTHLY TRACKER
+============================================ */
+
+function daysInMonth(
+  year,
+  month
+){
+
+  return new Date(
+    year,
+    month + 1,
+    0
+  ).getDate();
+
+}
+
+
+function renderMonth(){
+
+  const year =
+    currentMonth.getFullYear();
+
+  const month =
+    currentMonth.getMonth();
+
+  const days =
+    daysInMonth(
+      year,
+      month
+    );
+
+
+  $("monthName").textContent =
+    currentMonth.toLocaleString(
+      undefined,
+      {
+        month:"long",
+        year:"numeric"
+      }
+    );
+
+
+  let header =
+    "<tr><th>Habit</th>";
+
+
+  for(
+    let day=1;
+    day<=days;
+    day++
+  ){
+
+    header +=
+      `<th>${day}</th>`;
+
+  }
+
+
+  header += "</tr>";
+
+  $("monthHead").innerHTML =
+    header;
+
+
+  const habits =
+    Object.entries(data.habits)
+      .filter(
+        ([id,habit]) =>
+          habit.active !== false
+      );
+
+
+  if(!habits.length){
+
+    $("monthBody").innerHTML =
+
+      `<tr>
+        <td
+          colspan="${days+1}"
+          class="muted"
+        >
+          No habits yet.
+        </td>
+      </tr>`;
+
+    return;
+
+  }
+
+
+  $("monthBody").innerHTML =
+
+    habits.map(
+      ([id,habit]) => {
+
+        let row =
+          `<tr>
+             <td>
+               <b>
+                 ${escapeHTML(habit.name)}
+               </b>
+             </td>`;
+
+
+        for(
+          let day=1;
+          day<=days;
+          day++
+        ){
+
+          const date =
+            dateKey(
+              new Date(
+                year,
+                month,
+                day
+              )
+            );
+
+
+          const checked =
+            !!data
+              .dailyRecords
+              [date]
+              ?.habitChecks
+              ?. [id];
+
+
+          row += `
+
+            <td>
+
+              <button
+                class="dayCell ${checked?"done":""}"
+                data-month-habit="${id}"
+                data-month-date="${date}"
+              >
+                ${checked?"✓":""}
+              </button>
+
+            </td>
+
+          `;
+
+        }
+
+
+        row += "</tr>";
+
+        return row;
+
+      }
+    ).join("");
+
+
+  document
+    .querySelectorAll(
+      "[data-month-habit]"
+    )
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        () =>
+          toggleHabit(
+            button.dataset.monthHabit,
+            button.dataset.monthDate
+          )
+      );
+
+    });
+
+}
+
+
+/* ============================================
+   CALENDAR
+============================================ */
+
+function renderCalendar(){
+
+  const year =
+    currentMonth.getFullYear();
+
+  const month =
+    currentMonth.getMonth();
+
+  const days =
+    daysInMonth(
+      year,
+      month
+    );
+
+  const first =
+    new Date(
+      year,
+      month,
+      1
+    ).getDay();
+
+
+  let html="";
+
+
+  [
+    "S",
+    "M",
+    "T",
+    "W",
+    "T",
+    "F",
+    "S"
+  ].forEach(day => {
+
+    html +=
+      `<div class="calendarHeader">
+        ${day}
+      </div>`;
+
+  });
+
+
+  for(
+    let i=0;
+    i<first;
+    i++
+  ){
+
+    html += "<div></div>";
+
+  }
+
+
+  for(
+    let day=1;
+    day<=days;
+    day++
+  ){
+
+    const date =
+      dateKey(
+        new Date(
+          year,
+          month,
+          day
+        )
+      );
+
+
+    const count =
+      Object.keys(
+        data
+          .dailyRecords
+          [date]
+          ?.habitChecks || {}
+      ).length;
+
+
+    html += `
+
+      <div
+        class="day
+        ${date===today?"today":""}
+        ${count?"has":""}"
+      >
+
+        <div class="dayNum">
+          ${day}
+        </div>
+
+        <div class="dayCount">
+          ${count ? count+" ✓":""}
+        </div>
+
+      </div>
+
+    `;
+
+  }
+
+
+  $("calendar").innerHTML =
+    html;
+
+}
+
+
+/* ============================================
+   PROGRESS
+============================================ */
+
+function renderProgress(){
+
+  const tasks =
+    Object.values(data.tasks)
+      .filter(
+        task =>
+          task.date === today
+      );
+
+
+  const completed =
+    tasks.filter(
+      task =>
+        task.completed
+    ).length;
+
+
+  const percentage =
+    tasks.length
+      ? Math.round(
+          completed /
+          tasks.length *
+          100
+        )
+      : 0;
+
+
+  $("taskCount").textContent =
+    tasks.length;
+
+  $("completedCount").textContent =
+    completed;
+
+  $("percentage").textContent =
+    percentage + "%";
+
+  $("progressBar").style.width =
+    percentage + "%";
+
+}
+
+
+/* ============================================
+   NOTES
+============================================ */
+
+async function saveNotes(){
+
+  try{
+
+    await set(
+
+      ref(
+        database,
+        "users/"
+        + currentUser.uid
+        + "/dailyRecords/"
+        + today
+        + "/notes"
+      ),
+
+      $("notes").value
+
+    );
+
+
+    setStatus(
+      "● Notes saved",
+      true
+    );
+
+
+    setTimeout(
+      () =>
+        setStatus(
+          "● Firebase connected",
+          true
+        ),
+      1200
+    );
+
+  }catch(error){
+
+    alert(
+      "Notes could not be saved:\n\n"
+      + error.message
+    );
+
+  }
+
+}
+
+
+/* ============================================
+   PDF
+============================================ */
+
+function printReport(){
+
+  const year =
+    currentMonth.getFullYear();
+
+  const month =
+    currentMonth.getMonth();
+
+  const days =
+    daysInMonth(
+      year,
+      month
+    );
+
+
+  let rows="";
+
+
+  Object.entries(data.habits)
+    .filter(
+      ([id,habit]) =>
+        habit.active !== false
+    )
+    .forEach(
+      ([id,habit]) => {
+
+        let completed=0;
+
+
+        for(
+          let day=1;
+          day<=days;
+          day++
+        ){
+
+          const date =
+            dateKey(
+              new Date(
+                year,
+                month,
+                day
+              )
+            );
+
+
+          if(
+            data
+              .dailyRecords
+              [date]
+              ?.habitChecks
+              ?. [id]
+          ){
+
+            completed++;
+
+          }
+
+        }
+
+
+        const rate =
+          Math.round(
+            completed /
+            days *
+            100
+          );
+
+
+        rows += `
+
+          <tr>
+
+            <td>
+              ${escapeHTML(habit.name)}
+            </td>
+
+            <td>
+              ${completed}/${days}
+            </td>
+
+            <td>
+              ${rate}%
+            </td>
+
+          </tr>
+
+        `;
+
+      }
+    );
+
+
+  const monthName =
+    currentMonth.toLocaleString(
+      undefined,
+      {
+        month:"long",
+        year:"numeric"
+      }
+    );
+
+
+  const report =
+    window.open(
+      "",
+      "_blank"
+    );
+
+
+  report.document.write(`
+
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<title>
+Daily Tracker Report
+</title>
+
+<style>
+
+body{
+  font-family:Arial;
+  padding:30px;
+}
+
+table{
+  border-collapse:collapse;
+  width:100%;
+}
+
+th,
+td{
+  border:1px solid #ddd;
+  padding:10px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>
+Daily Tracker — ${monthName}
+</h1>
+
+<table>
+
+<tr>
+<th>Habit</th>
+<th>Completed</th>
+<th>Rate</th>
+</tr>
+
+${rows}
+
+</table>
+
+<p>
+Use Print → Save as PDF.
+</p>
+
+</body>
+
+</html>
+
+  `);
+
+
+  report.document.close();
+
+  report.print();
+
+}
+
+
+/* ============================================
+   MONTH NAVIGATION
+============================================ */
+
+function previousMonth(){
+
+  currentMonth =
+    new Date(
+      currentMonth.getFullYear(),
+      currentMonth.getMonth()-1,
+      1
+    );
+
+  renderMonth();
+  renderCalendar();
+
+}
+
+
+function nextMonth(){
+
+  currentMonth =
+    new Date(
+      currentMonth.getFullYear(),
+      currentMonth.getMonth()+1,
+      1
+    );
+
+  renderMonth();
+  renderCalendar();
+
+}
+
+
+/* ============================================
+   RENDER EVERYTHING
+============================================ */
+
+function renderAll(){
+
+  renderTasks();
+
+  renderHabits();
+
+  renderMonth();
+
+  renderCalendar();
+
+  renderProgress();
+
+}
+
+
+/* ============================================
+   BUTTON EVENTS
+============================================ */
+
+$("addTaskButton")
+  .addEventListener(
+    "click",
+    addTask
+  );
+
+
+$("addHabitButton")
+  .addEventListener(
+    "click",
+    addHabit
+  );
+
+
+$("saveNotesButton")
+  .addEventListener(
+    "click",
+    saveNotes
+  );
+
+
+$("refreshButton")
+  .addEventListener(
+    "click",
+    loadData
+  );
+
+
+$("previousMonth")
+  .addEventListener(
+    "click",
+    previousMonth
+  );
+
+
+$("nextMonth")
+  .addEventListener(
+    "click",
+    nextMonth
+  );
+
+
+$("pdfButton")
+  .addEventListener(
+    "click",
+    printReport
+  );
+
+
+$("googleLogin")
+  .addEventListener(
+    "click",
+    async () => {
+
+      try{
+
+        $("loginError").style.display =
+          "none";
+
+        await signInWithPopup(
+          auth,
+          provider
+        );
+
+      }catch(error){
+
+        console.error(error);
+
+        $("loginError").textContent =
+          error.code
+          + ": "
+          + error.message;
+
+        $("loginError").style.display =
+          "block";
+
+      }
+
+    }
+  );
+
+
+$("logoutButton")
+  .addEventListener(
+    "click",
+    async () => {
+
+      await signOut(auth);
+
+    }
+  );
+
+
+/* ENTER KEY */
+
+$("taskInput")
+  .addEventListener(
+    "keydown",
+    event => {
+
+      if(event.key==="Enter")
+        addTask();
+
+    }
+  );
+
+
+$("habitInput")
+  .addEventListener(
+    "keydown",
+    event => {
+
+      if(event.key==="Enter")
+        addHabit();
+
+    }
+  );
+
+
+/* ============================================
+   AUTH STATE
+============================================ */
+
+onAuthStateChanged(
+  auth,
+  async user => {
+
+    currentUser = user;
+
+
+    if(user){
+
+      $("loginScreen")
+        .classList
+        .add("hidden");
+
+
+      $("app").style.display =
+        "block";
+
+
+      $("userName").textContent =
+        user.displayName
+        || user.email
+        || "Personal tracker";
+
+
+      if(user.photoURL){
+
+        $("userAvatar").src =
+          user.photoURL;
+
+        $("userAvatar").style.display =
+          "block";
+
+      }
+
+
+      await loadData();
+
+    }else{
+
+      $("loginScreen")
+        .classList
+        .remove("hidden");
+
+
+      $("app").style.display =
+        "none";
+
+    }
+
+  }
+);
+
+
+/* ============================================
+   DATE
+============================================ */
+
+$("todayTitle").textContent =
+  new Date().toLocaleDateString(
+    undefined,
+    {
+      weekday:"long",
+      month:"long",
+      day:"numeric"
+    }
+  );
+
+
+$("todayDate").textContent =
+  today;
+
 </script>
+
 </body>
 </html>
