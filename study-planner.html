@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Study Planner</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--text:#18202a;--muted:#6b7280;--line:#e5e7eb;--accent:#4f46e5;--good:#16a34a;--warn:#d97706;--danger:#dc2626}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:var(--bg);color:var(--text)}
+header{background:#111827;color:white;padding:20px 28px;display:flex;align-items:center;justify-content:space-between;gap:15px;position:sticky;top:0;z-index:5}
+header h1{margin:0;font-size:22px}header small{color:#cbd5e1}
+nav{display:flex;gap:8px;flex-wrap:wrap;padding:14px 24px;background:white;border-bottom:1px solid var(--line);position:sticky;top:72px;z-index:4}
+button,.fileBtn{border:0;border-radius:9px;padding:10px 14px;font-weight:600;cursor:pointer;background:#eef2ff;color:#3730a3}
+button.active{background:var(--accent);color:#fff}button.secondary{background:#f3f4f6;color:#374151}button.danger{background:#fee2e2;color:#991b1b}
+.fileBtn{display:inline-block}.fileBtn input{display:none}
+main{max-width:1200px;margin:24px auto;padding:0 18px}.view{display:none}.view.active{display:block}
+.grid{display:grid;gap:16px}.stats{grid-template-columns:repeat(auto-fit,minmax(180px,1fr));margin-bottom:20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:18px;box-shadow:0 2px 8px #00000008}
+.stat .label{font-size:13px;color:var(--muted)}.stat .value{font-size:30px;font-weight:800;margin-top:5px}
+.progress{height:9px;background:#e5e7eb;border-radius:99px;overflow:hidden}.progress i{display:block;height:100%;background:var(--accent);border-radius:99px}
+.two{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+.task{display:flex;gap:12px;align-items:flex-start;padding:13px 0;border-bottom:1px solid var(--line)}.task:last-child{border-bottom:0}
+.task input{width:19px;height:19px;margin-top:2px}.task.done .taskTitle{text-decoration:line-through;color:var(--muted)}
+.meta{font-size:12px;color:var(--muted);margin-top:4px}.pill{display:inline-block;padding:4px 8px;border-radius:99px;background:#eef2ff;color:#3730a3;font-size:11px;font-weight:700}
+select,input[type=date],input[type=text]{padding:9px;border:1px solid var(--line);border-radius:8px;background:white}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.calendar{display:grid;grid-template-columns:repeat(7,1fr);border:1px solid var(--line);border-radius:12px;overflow:hidden;background:white}
+.dayhead{padding:10px;font-weight:700;text-align:center;background:#f9fafb;border-bottom:1px solid var(--line)}.cell{min-height:105px;padding:8px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);cursor:pointer}.cell:hover{background:#fafafa}
+.cell .num{font-weight:700}.cell.today{outline:2px solid var(--accent);outline-offset:-2px}.cell.selected{background:#eef2ff}
+.dot{font-size:11px;margin-top:5px;padding:3px 5px;border-radius:5px;background:#f3f4f6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chapter{margin-bottom:14px}.chapterTop{display:flex;justify-content:space-between;gap:10px;align-items:center}.chapter h3{margin:0 0 4px}.session{padding:10px 0;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:10px}
+.empty{text-align:center;padding:35px;color:var(--muted)}
+.modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;z-index:20;padding:18px}.modal.show{display:flex}.modalBox{background:white;border-radius:16px;padding:20px;max-width:520px;width:100%}
+textarea{width:100%;min-height:260px;padding:12px;border:1px solid var(--line);border-radius:10px;font-family:monospace}
+@media(max-width:650px){header{padding:16px}nav{top:64px;padding:10px}.cell{min-height:80px}.dot{font-size:9px}}
+</style>
+</head>
+<body>
+<header><div><h1>📚 Study Planner</h1><small>Daily sessions → chapters → subjects → overall progress</small></div>
+<div><button class="secondary" onclick="openImport()">Import JSON</button> <button onclick="exportJSON()">Export JSON</button></div></header>
+<nav>
+<button class="tab active" data-view="dashboard">Dashboard</button>
+<button class="tab" data-view="today">Today</button>
+<button class="tab" data-view="calendar">Calendar</button>
+<button class="tab" data-view="chapters">Chapters</button>
+<button class="tab" data-view="exams">Exams</button>
+<button class="tab" data-view="data">Data</button>
+</nav>
+<main>
+<section id="dashboard" class="view active">
+<div class="grid stats" id="stats"></div>
+<div class="grid two"><div class="card"><h2>Subject Progress</h2><div id="subjectProgress"></div></div><div class="card"><h2>Upcoming Study</h2><div id="upcoming"></div></div></div>
+</section>
+<section id="today" class="view"><div class="card"><div class="toolbar"><h2 style="margin-right:auto">Daily To-Do</h2><input type="date" id="todayDate"><select id="todaySubject"><option value="">All subjects</option></select></div><div id="dailyTasks"></div></div></section>
+<section id="calendar" class="view"><div class="card"><div class="toolbar"><button onclick="changeMonth(-1)">←</button><h2 id="monthTitle" style="margin:auto"></h2><button onclick="changeMonth(1)">→</button><button class="secondary" onclick="goToday()">Today</button></div><div class="calendar" id="calendarGrid"></div><div id="selectedDay" style="margin-top:16px"></div></div></section>
+<section id="chapters" class="view"><div class="card"><div class="toolbar"><h2 style="margin-right:auto">Chapter Tracking</h2><select id="chapterSubject"><option value="">All subjects</option></select></div><div id="chapterList"></div></div></section>
+<section id="exams" class="view"><div class="card"><h2>Exam Dates</h2><div id="examList"></div></div></section>
+<section id="data" class="view"><div class="card"><h2>Data</h2><p>Import the JSON generated from your study plan. Your completion changes are stored in this browser.</p><div class="toolbar"><button onclick="openImport()">Import JSON</button><button onclick="exportJSON()">Export current JSON</button><button class="danger" onclick="resetData()">Reset to sample data</button></div><pre id="dataPreview" style="white-space:pre-wrap;background:#f8fafc;padding:14px;border-radius:10px;max-height:500px;overflow:auto"></pre></div></section>
+</main>
+<div class="modal" id="importModal"><div class="modalBox"><h2>Import Study Plan JSON</h2><p>Paste valid JSON below. It should contain <code>study_plan.subjects</code> with chapters and sessions.</p><textarea id="jsonInput" placeholder='{"study_plan":{"subjects":[],"exams":[]}}'></textarea><div class="toolbar" style="margin-top:12px"><button onclick="importJSON()">Import</button><button class="secondary" onclick="closeImport()">Cancel</button></div><div id="importError" style="color:#b91c1c"></div></div></div>
+
+<script>
+const sample={
+ study_plan:{subjects:[
+  {id:"PHY",name:"Physics",chapters:[
+   {id:"PHY-CH01",name:"Motion",status:"Not Started",sessions:[
+    {id:"PHY-CH01-S01",date:"2026-08-28",topic:"Introduction to motion",planned_minutes:60,status:"Pending"},
+    {id:"PHY-CH01-S02",date:"2026-08-29",topic:"Distance and displacement",planned_minutes:60,status:"Pending"}]},
+   {id:"PHY-CH02",name:"Laws of Motion",status:"Not Started",sessions:[
+    {id:"PHY-CH02-S01",date:"2026-08-30",topic:"Newton's laws",planned_minutes:90,status:"Pending"}]}]},
+  {id:"CHEM",name:"Chemistry",chapters:[
+   {id:"CHEM-CH01",name:"Solutions",status:"Not Started",sessions:[
+    {id:"CHEM-CH01-S01",date:"2026-08-28",topic:"Concentration terms",planned_minutes:60,status:"Pending"},
+    {id:"CHEM-CH01-S02",date:"2026-08-31",topic:"Solubility",planned_minutes:60,status:"Pending"}]}]}
+ ],exams:[
+  {id:"EX1",name:"Improvement Exam",date:"2026-09-12"},
+  {id:"EX2",name:"Improvement Exam",date:"2026-09-17"}
+ ]}
+};
+let data=JSON.parse(localStorage.getItem("studyPlannerData")||JSON.stringify(sample));
+let calDate=new Date(), selectedDate=todayISO();
+
+function todayISO(){return new Date().toISOString().slice(0,10)}
+function subjects(){return data.study_plan?.subjects||[]}
+function exams(){return data.study_plan?.exams||[]}
+function allSessions(){return subjects().flatMap(s=>s.chapters.flatMap(c=>c.sessions.map(x=>({...x,subject:s.name,subjectId:s.id,chapter:c.name,chapterId:c.id}))))}
+function save(){localStorage.setItem("studyPlannerData",JSON.stringify(data));render()}
+function pct(done,total){return total?Math.round(done/total*100):0}
+function chapterStats(c){let ss=c.sessions||[], total=ss.reduce((a,x)=>a+(+x.planned_minutes||0),0),done=ss.filter(x=>x.status==="Completed").reduce((a,x)=>a+(+x.planned_minutes||0),0);return {total,done,p:pct(done,total)}}
+function subjectStats(s){let a=s.chapters.flatMap(c=>c.sessions||[]),total=a.reduce((z,x)=>z+(+x.planned_minutes||0),0),done=a.filter(x=>x.status==="Completed").reduce((z,x)=>z+(+x.planned_minutes||0),0);return{total,done,p:pct(done,total)}}
+function overall(){let a=allSessions(),total=a.reduce((z,x)=>z+(+x.planned_minutes||0),0),done=a.filter(x=>x.status==="Completed").reduce((z,x)=>z+(+x.planned_minutes||0),0);return{total,done,p:pct(done,total)}}
+
+function render(){
+ document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.querySelectorAll(".view").forEach(x=>x.classList.remove("active"));document.getElementById(b.dataset.view).classList.add("active");render()});
+ fillSelects();renderDashboard();renderToday();renderCalendar();renderChapters();renderExams();document.getElementById("dataPreview").textContent=JSON.stringify(data,null,2);
+}
+function fillSelects(){
+ let opts='<option value="">All subjects</option>'+subjects().map(s=>`<option value="${esc(s.id)}">${esc(s.name)}</option>`).join("");
+ document.getElementById("todaySubject").innerHTML=opts;document.getElementById("chapterSubject").innerHTML=opts;
+ document.getElementById("todayDate").value=selectedDate;
+}
+function renderDashboard(){
+ let o=overall(), ss=allSessions(), completed=ss.filter(x=>x.status==="Completed").length;
+ document.getElementById("stats").innerHTML=[
+  ["Overall progress",o.p+"%"],["Completed sessions",completed+"/"+ss.length],["Study planned",Math.round(o.total/60*10)/10+" h"],["Exams",exams().length]
+ ].map(x=>`<div class="card stat"><div class="label">${x[0]}</div><div class="value">${x[1]}</div><div class="progress"><i style="width:${x[1].includes("%")?o.p:0}%"></i></div></div>`).join("");
+ document.getElementById("subjectProgress").innerHTML=subjects().map(s=>{let q=subjectStats(s);return `<div style="margin:14px 0"><div style="display:flex;justify-content:space-between"><b>${esc(s.name)}</b><span>${q.p}%</span></div><div class="progress"><i style="width:${q.p}%"></i></div></div>`}).join("")||'<div class="empty">No subjects yet.</div>';
+ let up=ss.filter(x=>x.status!=="Completed"&&x.date>=todayISO()).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,7);
+ document.getElementById("upcoming").innerHTML=up.map(x=>`<div class="task"><div><b>${esc(x.topic)}</b><div class="meta">${x.date} · ${esc(x.subject)} · ${esc(x.chapter)} · ${x.planned_minutes} min</div></div></div>`).join("")||'<div class="empty">Nothing upcoming.</div>';
+}
+function renderToday(){
+ let date=document.getElementById("todayDate").value||selectedDate, sub=document.getElementById("todaySubject").value;
+ document.getElementById("todayDate").onchange=e=>{selectedDate=e.target.value;renderToday();};
+ document.getElementById("todaySubject").onchange=renderToday;
+ let a=allSessions().filter(x=>x.date===date&&(!sub||x.subjectId===sub));
+ document.getElementById("dailyTasks").innerHTML=a.map(x=>taskHTML(x)).join("")||'<div class="empty">No study sessions for this date.</div>';
+}
+function taskHTML(x){
+ return `<div class="task ${x.status==="Completed"?"done":""}"><input type="checkbox" ${x.status==="Completed"?"checked":""} onchange="toggleSession('${x.subjectId}','${x.chapterId}','${x.id}',this.checked)"><div><div class="taskTitle"><b>${esc(x.topic)}</b></div><div class="meta">${esc(x.subject)} · ${esc(x.chapter)} · ${x.planned_minutes||0} min · ${x.status}</div></div></div>`;
+}
+function findSession(sid,cid,xid){let s=subjects().find(a=>a.id===sid),c=s?.chapters.find(a=>a.id===cid);return c?.sessions.find(a=>a.id===xid)}
+function toggleSession(sid,cid,xid,checked){let x=findSession(sid,cid,xid);if(!x)return;x.status=checked?"Completed":"Pending";let c=subjects().find(s=>s.id===sid).chapters.find(c=>c.id===cid);let st=chapterStats(c);c.status=st.p===0?"Not Started":st.p>=100?"Completed":"In Progress";save()}
+function renderCalendar(){
+ let y=calDate.getFullYear(),m=calDate.getMonth();document.getElementById("monthTitle").textContent=calDate.toLocaleString("default",{month:"long",year:"numeric"});
+ let first=new Date(y,m,1).getDay(),days=new Date(y,m+1,0).getDate(),html=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(x=>`<div class="dayhead">${x}</div>`).join("");
+ for(let i=0;i<first;i++)html+='<div class="cell"></div>';
+ for(let d=1;d<=days;d++){let iso=`${y}-${String(m+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`,a=allSessions().filter(x=>x.date===iso),done=a.filter(x=>x.status==="Completed").length;html+=`<div class="cell ${iso===todayISO()?"today":""} ${iso===selectedDate?"selected":""}" onclick="selectDay('${iso}')"><div class="num">${d}</div>${a.slice(0,3).map(x=>`<div class="dot">${x.status==="Completed"?"✓ ":""}${esc(x.subject)}: ${esc(x.topic)}</div>`).join("")}${a.length>3?`<div class="meta">+${a.length-3} more</div>`:""}</div>`}
+ document.getElementById("calendarGrid").innerHTML=html;renderSelectedDay();
+}
+function selectDay(iso){selectedDate=iso;renderCalendar();document.querySelector('[data-view="today"]').click()}
+function renderSelectedDay(){let a=allSessions().filter(x=>x.date===selectedDate);document.getElementById("selectedDay").innerHTML=`<div class="card"><b>${selectedDate}</b>${a.length?a.map(x=>taskHTML(x)).join(""):'<div class="empty">No sessions.</div>'}</div>`}
+function changeMonth(n){calDate.setMonth(calDate.getMonth()+n);renderCalendar()}function goToday(){calDate=new Date();selectedDate=todayISO();renderCalendar()}
+function renderChapters(){
+ let sub=document.getElementById("chapterSubject").value;document.getElementById("chapterSubject").onchange=renderChapters;
+ let arr=subjects().filter(s=>!sub||s.id===sub).flatMap(s=>s.chapters.map(c=>({s,c})));
+ document.getElementById("chapterList").innerHTML=arr.map(({s,c})=>{let q=chapterStats(c);return `<div class="chapter card"><div class="chapterTop"><div><h3>${esc(s.name)} — ${esc(c.name)}</h3><span class="pill">${c.status||"Not Started"}</span></div><b>${q.p}%</b></div><div class="progress" style="margin:10px 0 4px"><i style="width:${q.p}%"></i></div>${(c.sessions||[]).sort((a,b)=>a.date.localeCompare(b.date)).map(x=>`<div class="session"><div><b>${esc(x.topic)}</b><div class="meta">${x.date} · ${x.planned_minutes||0} min</div></div><button onclick="toggleSession('${s.id}','${c.id}','${x.id}',${x.status!=="Completed"})">${x.status==="Completed"?"Undo":"Complete"}</button></div>`).join("")}</div>`}).join("")||'<div class="empty">No chapters yet.</div>';
+}
+function renderExams(){let a=exams().slice().sort((x,y)=>String(x.date).localeCompare(String(y.date)));document.getElementById("examList").innerHTML=a.map(x=>`<div class="task"><div><b>${esc(x.name)}</b><div class="meta">${x.date}</div></div><span class="pill">${daysUntil(x.date)}</span></div>`).join("")||'<div class="empty">No exams in imported data.</div>'}
+function daysUntil(d){let n=Math.ceil((new Date(d+"T00:00:00")-new Date(todayISO()+"T00:00:00"))/86400000);return n<0?"Passed":n===0?"Today":n+" days"}
+function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+function openImport(){document.getElementById("jsonInput").value="";document.getElementById("importError").textContent="";document.getElementById("importModal").classList.add("show")}
+function closeImport(){document.getElementById("importModal").classList.remove("show")}
+function importJSON(){
+ try{
+  let obj=JSON.parse(document.getElementById("jsonInput").value);
+  if(!obj.study_plan||!Array.isArray(obj.study_plan.subjects))throw Error("JSON must contain study_plan.subjects as an array.");
+  obj.study_plan.exams=obj.study_plan.exams||[];
+  obj.study_plan.subjects.forEach(s=>(s.chapters||[]).forEach(c=>{c.sessions=c.sessions||[];c.sessions.forEach(x=>{x.status=x.status||"Pending";x.planned_minutes=Number(x.planned_minutes)||0});let q=chapterStats(c);c.status=q.p===0?"Not Started":q.p>=100?"Completed":"In Progress"}));
+  data=obj;localStorage.setItem("studyPlannerData",JSON.stringify(data));closeImport();render();alert("Study plan imported successfully.");
+ }catch(e){document.getElementById("importError").textContent="Import failed: "+e.message}
+}
+function exportJSON(){let blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="study-plan.json";a.click();URL.revokeObjectURL(a.href)}
+function resetData(){if(confirm("Reset the planner to sample data?")){data=JSON.parse(JSON.stringify(sample));save()}}
+document.getElementById("todayDate").value=todayISO();render();
+</script>
+</body>
+</html>
