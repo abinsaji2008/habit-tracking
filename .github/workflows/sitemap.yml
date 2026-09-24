@@ -1,0 +1,125 @@
+name: Update sitemap
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 2 * * *"
+  push:
+    branches: ["main"]
+
+permissions:
+  contents: write
+
+jobs:
+  update-sitemap:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Discover subdomains and generate sitemap
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import urllib.parse
+          import urllib.request
+
+          TOKEN = os.environ.get("CLOUDFLARE_API_TOKEN")
+          ZONE = "abihomelabs.dpdns.org"
+
+          if not TOKEN:
+              raise SystemExit("CLOUDFLARE_API_TOKEN secret is missing.")
+
+          def get_json(url):
+              req = urllib.request.Request(
+                  url,
+                  headers={
+                      "Authorization": f"Bearer {TOKEN}",
+                      "Content-Type": "application/json",
+                  },
+              )
+              with urllib.request.urlopen(req, timeout=30) as r:
+                  return json.load(r)
+
+          # Find the zone ID.
+          zone_url = (
+              "https://api.cloudflare.com/client/v4/zones"
+              + "?" + urllib.parse.urlencode({"name": ZONE, "status": "active", "per_page": 1})
+          )
+          zone_data = get_json(zone_url)
+
+          if not zone_data.get("success") or not zone_data.get("result"):
+              raise SystemExit(
+                  "Could not find the Cloudflare zone. "
+                  "Make sure the token can read DNS for this zone."
+              )
+
+          zone_id = zone_data["result"][0]["id"]
+
+          # Get all DNS records with pagination.
+          records = []
+          page = 1
+
+          while True:
+              url = (
+                  f"https://api.cloudflare.com/client/v4/zones/{zone_id}/dns_records"
+                  + "?"
+                  + urllib.parse.urlencode({
+                      "per_page": 100,
+                      "page": page,
+                  })
+              )
+              data = get_json(url)
+              if not data.get("success"):
+                  raise SystemExit("Cloudflare DNS API request failed.")
+
+              records.extend(data.get("result", []))
+              info = data.get("result_info", {})
+              if page >= info.get("total_pages", page):
+                  break
+              page += 1
+
+          hosts = {ZONE}
+
+          for record in records:
+              rtype = record.get("type")
+              name = record.get("name", "").rstrip(".")
+              if rtype not in {"A", "AAAA", "CNAME"}:
+                  continue
+              if name == ZONE or name.endswith("." + ZONE):
+                  hosts.add(name)
+
+          urls = []
+          for host in sorted(hosts):
+              urls.append(f"https://{host}/")
+
+          xml = ['<?xml version="1.0" encoding="UTF-8"?>']
+          xml.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
+          for url in urls:
+              xml.append("  <url>")
+              xml.append(f"    <loc>{url}</loc>")
+              xml.append("  </url>")
+          xml.append("</urlset>")
+          xml.append("")
+
+          with open("sitemap.xml", "w", encoding="utf-8") as f:
+              f.write("\n".join(xml))
+
+          print(f"Generated sitemap with {len(urls)} URLs.")
+          PY
+
+      - name: Commit sitemap if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add sitemap.xml
+          if git diff --cached --quiet; then
+            echo "No sitemap changes."
+          else
+            git commit -m "chore: update sitemap"
+            git push
+          fi
