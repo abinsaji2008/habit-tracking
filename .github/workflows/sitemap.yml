@@ -13,6 +13,7 @@ permissions:
 jobs:
   update-sitemap:
     runs-on: ubuntu-latest
+    environment: CLOUDFLARE_API_TOKEN
 
     steps:
       - name: Checkout repository
