@@ -7,13 +7,12 @@ on:
   push:
     branches: ["main"]
 
-permissions:
-  contents: write
-
 jobs:
   update-sitemap:
     runs-on: ubuntu-latest
     environment: CLOUDFLARE_API_TOKEN
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout repository
@@ -46,11 +45,15 @@ jobs:
               with urllib.request.urlopen(req, timeout=30) as r:
                   return json.load(r)
 
-          # Find the zone ID.
           zone_url = (
               "https://api.cloudflare.com/client/v4/zones"
-              + "?" + urllib.parse.urlencode({"name": ZONE, "status": "active", "per_page": 1})
+              + "?" + urllib.parse.urlencode({
+                  "name": ZONE,
+                  "status": "active",
+                  "per_page": 1
+              })
           )
+
           zone_data = get_json(zone_url)
 
           if not zone_data.get("success") or not zone_data.get("result"):
@@ -61,7 +64,6 @@ jobs:
 
           zone_id = zone_data["result"][0]["id"]
 
-          # Get all DNS records with pagination.
           records = []
           page = 1
 
@@ -75,13 +77,16 @@ jobs:
                   })
               )
               data = get_json(url)
+
               if not data.get("success"):
                   raise SystemExit("Cloudflare DNS API request failed.")
 
               records.extend(data.get("result", []))
               info = data.get("result_info", {})
+
               if page >= info.get("total_pages", page):
                   break
+
               page += 1
 
           hosts = {ZONE}
@@ -89,21 +94,23 @@ jobs:
           for record in records:
               rtype = record.get("type")
               name = record.get("name", "").rstrip(".")
+
               if rtype not in {"A", "AAAA", "CNAME"}:
                   continue
+
               if name == ZONE or name.endswith("." + ZONE):
                   hosts.add(name)
 
-          urls = []
-          for host in sorted(hosts):
-              urls.append(f"https://{host}/")
+          urls = [f"https://{host}/" for host in sorted(hosts)]
 
           xml = ['<?xml version="1.0" encoding="UTF-8"?>']
           xml.append('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
+
           for url in urls:
               xml.append("  <url>")
               xml.append(f"    <loc>{url}</loc>")
               xml.append("  </url>")
+
           xml.append("</urlset>")
           xml.append("")
 
@@ -124,3 +131,32 @@ jobs:
             git commit -m "chore: update sitemap"
             git push
           fi
+
+  deploy-pages:
+    needs: update-sitemap
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout latest main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: "."
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
