@@ -3,4 +3,19 @@
   <url>
     <loc>https://abihomelabs.dpdns.org/</loc>
   </url>
+  <url>
+    <loc>https://api.abihomelabs.dpdns.org/</loc>
+  </url>
+  <url>
+    <loc>https://iv.abihomelabs.dpdns.org/</loc>
+  </url>
+  <url>
+    <loc>https://pro.abihomelabs.dpdns.org/</loc>
+  </url>
+  <url>
+    <loc>https://re.abihomelabs.dpdns.org/</loc>
+  </url>
+  <url>
+    <loc>https://teeth.abihomelabs.dpdns.org/</loc>
+  </url>
 </urlset>
