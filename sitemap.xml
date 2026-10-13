@@ -4,9 +4,6 @@
     <loc>https://abihomelabs.dpdns.org/</loc>
   </url>
   <url>
-    <loc>https://algrmaoknhbr.abihomelabs.dpdns.org/</loc>
-  </url>
-  <url>
     <loc>https://api.abihomelabs.dpdns.org/</loc>
   </url>
   <url>
@@ -20,5 +17,8 @@
   </url>
   <url>
     <loc>https://teeth.abihomelabs.dpdns.org/</loc>
+  </url>
+  <url>
+    <loc>https://wa.abihomelabs.dpdns.org/</loc>
   </url>
 </urlset>
